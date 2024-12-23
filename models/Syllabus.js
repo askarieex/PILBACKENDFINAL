@@ -11,10 +11,7 @@ const syllabusSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    subject: {
-      type: String,
-      required: true,
-    },
+   
     pdfUrl: {
       type: String,
       required: true,

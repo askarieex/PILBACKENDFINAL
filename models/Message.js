@@ -17,9 +17,31 @@ const messageSchema = new mongoose.Schema({
   },
   targetAudience: {
     type: String,
-    enum: ['All', 'Parents', 'Boys', 'Girls', 'Specific Class'],
+    enum: [
+      'All',
+      'Parents',
+      'Boys',
+      'Girls',
+      'Nursery',
+      'LKG',
+      'UKG',
+      '1st',
+      '2nd',
+      '3rd',
+      '4th',
+      '5th',
+      '6th',
+      '7th',
+      '8th',
+      '9th',
+      '10th',
+    ],
     default: 'All',
     required: [true, 'Please specify the target audience'],
+  },
+  attachment: {
+    type: String, // URL or path to the uploaded file
+    default: '',
   },
   sentAt: {
     type: Date,
