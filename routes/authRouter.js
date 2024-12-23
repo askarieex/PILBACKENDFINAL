@@ -126,6 +126,6 @@ router.get("/admitCard", authMiddleware, AdmitCard);
 router.get("/syllabus", getAllSyllabus);
 router.get("/datesheet", getAllDatesheets); // Ensure getAllDatesheets is defined
 router.get("/messages", getAllMessages);
-router.get("/register", registerValidate(register));
+router.post("/register", registerValidate(register));
 
 module.exports = router;
