@@ -11,6 +11,7 @@ const { getUser } = require("../controllers/getUser");
 const authMiddleware = require("../middlewares/userAuthMiddleware");
 const { AdmitCard } = require("../controllers/admitCard");
 const { getAllSyllabus } = require("../controllers/Syllabus");
+const { createContact } = require("../controllers/Contact");
 const multer = require('multer');
 const path = require('path');
 const {
@@ -70,5 +71,6 @@ router.get("/admitCard", authMiddleware, AdmitCard);
 router.get("/syllabus", getAllSyllabus);
 router.get("/datesheet", getAllDatesheets);
 router.get("/messages", getAllMessages);
+router.get("/contact", createContact);
 
 module.exports = router;
