@@ -34,6 +34,12 @@ const {
   updateMessage,
   deleteMessage,
 } = require("../controllers/messageController");
+
+const {
+  getAllContacts,
+  deleteContact,
+} = require('../controllers/Contact');
+
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -169,5 +175,13 @@ router.get("/messages/:id", AdminAuthMiddleware, catchErrors(getMessageById));
 router.post("/messages", AdminAuthMiddleware, catchErrors(createMessage));
 router.put("/messages/:id", AdminAuthMiddleware, catchErrors(updateMessage));
 router.delete("/messages/:id", AdminAuthMiddleware, catchErrors(deleteMessage));
+
+
+
+// Route to get all contacts
+router.get('/contact', AdminAuthMiddleware, catchErrors(getAllContacts));
+
+// Route to delete a contact by ID
+router.delete('/contact/:id', AdminAuthMiddleware, catchErrors( deleteContact));
 
 module.exports = router;
