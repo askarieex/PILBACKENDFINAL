@@ -71,6 +71,6 @@ router.get("/admitCard", authMiddleware, AdmitCard);
 router.get("/syllabus", getAllSyllabus);
 router.get("/datesheet", getAllDatesheets);
 router.get("/messages", getAllMessages);
-router.get("/contact", createContact);
+router.post('/contact', createContact);
 
 module.exports = router;
