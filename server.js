@@ -20,7 +20,7 @@ connectDB();
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(cors({
-  origin: ['http://localhost:3002', 'http://localhost:3000'], // Allow both origins
+  origin: ['http://localhost:3002', 'http://localhost:3000','http://localhost:3001'], // Allow both origins
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true, // Allow cookies or authentication headers
 }));

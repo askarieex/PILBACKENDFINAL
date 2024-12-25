@@ -34,7 +34,7 @@ const {
   updateMessage,
   deleteMessage,
 } = require("../controllers/messageController");
-
+const { AdmitCard } = require("../controllers/admitCard");
 const {
   getAllContacts,
   deleteContact,
@@ -183,5 +183,5 @@ router.get('/contact', AdminAuthMiddleware, catchErrors(getAllContacts));
 
 // Route to delete a contact by ID
 router.delete('/contact/:id', AdminAuthMiddleware, catchErrors( deleteContact));
-
+router.get("/admitCard", AdminAuthMiddleware, AdmitCard);
 module.exports = router;
