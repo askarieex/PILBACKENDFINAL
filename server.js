@@ -1,3 +1,4 @@
+// backend/server.js
 require('dotenv').config();
 const express = require('express');
 const connectDB = require("./config/db");
@@ -8,17 +9,9 @@ const adminRouter = require("./routes/adminRouter");
 const errorMiddleware = require('./middlewares/errorMiddleware');
 const { notFound } = require('./handlers/errorHandlers');
 const path = require("path");
-const fs = require('fs'); // Required for reading SSL files
-const https = require('https'); // Required for HTTPS
 
 const app = express();
 const port = process.env.PORT || 3001;
-
-// Load SSL Certificate
-const sslOptions = {
-  key: fs.readFileSync('selfsigned.key'), // Path to private key
-  cert: fs.readFileSync('selfsigned.crt'), // Path to certificate
-};
 
 // Connect to MongoDB
 connectDB();
@@ -27,7 +20,7 @@ connectDB();
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(cors({
-  origin: ['https://pioneerinstitute.in', 'http://pil-admin.site', 'http://localhost:3002', 'http://localhost:3000', 'http://localhost:3001'], // Allowed origins
+  origin: ['https://pioneerinstitute.in','http://pil-admin.site','http://localhost:3002', 'http://localhost:3000','http://localhost:3001'], // Allow both origins
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true, // Allow cookies or authentication headers
 }));
@@ -47,7 +40,7 @@ app.use(notFound);
 // Centralized error handler
 app.use(errorMiddleware);
 
-// Start the HTTPS Server
-https.createServer(sslOptions, app).listen(port, () => {
-  console.log(`HTTPS Server listening on port ${port}`);
+// Start the server
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
 });
