@@ -67,7 +67,8 @@ exports.deleteContact = async (req, res) => {
             return res.status(404).json({ success: false, error: "Contact not found." });
         }
 
-        await contact.remove();
+        // Use deleteOne() instead of remove()
+        await Contact.deleteOne({ _id: req.params.id });
 
         res.status(200).json({ success: true, message: "Contact deleted successfully." });
     } catch (error) {
@@ -78,3 +79,4 @@ exports.deleteContact = async (req, res) => {
         res.status(500).json({ success: false, error: "Internal Server Error." });
     }
 };
+

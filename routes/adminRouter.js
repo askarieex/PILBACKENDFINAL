@@ -182,6 +182,7 @@ router.delete("/messages/:id", AdminAuthMiddleware, catchErrors(deleteMessage));
 router.get('/contact', AdminAuthMiddleware, catchErrors(getAllContacts));
 
 // Route to delete a contact by ID
-router.delete('/contact/:id', AdminAuthMiddleware, catchErrors( deleteContact));
+router.delete('/contact/:id', AdminAuthMiddleware, catchErrors(deleteContact));
+
 router.get("/admitCard", AdminAuthMiddleware, AdmitCard);
 module.exports = router;
