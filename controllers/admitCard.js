@@ -1,10 +1,58 @@
+// ./controllers/AdmitCardController.js
+
 const { jsPDF } = require('jspdf');
 const fs = require('fs');
 const path = require('path');
+const ApplicationModel = require('../models/Application'); // Adjust the path based on your project structure
 
 const AdmitCard = async (req, res) => {
   try {
-    const userData = req.user;
+    let applicationData = null;
+
+    // Check if 'id' is present in query parameters (Admin Request)
+    const applicationId = req.query.id;
+
+    if (applicationId) {
+      // ** Admin Request **
+      
+      // Verify that the requester is an admin
+      if (!req.user || !req.user.isAdmin) { // Adjust the admin verification based on your middleware
+        return res.status(403).json({ message: 'Access denied. Admins only.' });
+      }
+
+      // Fetch the application data using the provided ID
+      applicationData = await ApplicationModel.findById(applicationId);
+
+      if (!applicationData) {
+        return res.status(404).json({ message: 'Application not found.' });
+      }
+
+      // Ensure the application is approved
+      if (applicationData.applicationStatus !== 'approved') {
+        return res.status(403).json({ message: 'Admit card is only available for approved applications.' });
+      }
+    } else {
+      // ** User Request **
+
+      // Ensure that the user is authenticated
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+      }
+
+      // Fetch the user's own application data
+      applicationData = await ApplicationModel.findById(req.user.applicationId); // Adjust based on how you link user to application
+
+      if (!applicationData) {
+        return res.status(404).json({ message: 'Application not found.' });
+      }
+
+      // Ensure the application is approved
+      if (applicationData.applicationStatus !== 'approved') {
+        return res.status(403).json({ message: 'Admit card is only available for approved applications.' });
+      }
+    }
+
+    // ** Generate Admit Card PDF Using applicationData **
     const doc = new jsPDF('p', 'pt', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const marginLeft = 40;
@@ -12,20 +60,28 @@ const AdmitCard = async (req, res) => {
     let cursorY = 50;
 
     // Paths to logo and student photo
-    const logoPath = path.resolve(__dirname, '..', 'image.png');
-    const userPhotoPath = userData.student_photo_path
-      ? path.resolve(__dirname, '..', userData.student_photo_path)
+    const logoPath = path.resolve(__dirname, '..', 'assets', 'logo.png'); // Ensure the logo exists at this path
+    const userPhotoPath = applicationData.student_photo_path
+      ? path.resolve(__dirname, '..', applicationData.student_photo_path)
       : null;
 
     let logoImage;
     let userPhoto;
 
+    // Read and encode the logo image
     if (fs.existsSync(logoPath)) {
-      logoImage = fs.readFileSync(logoPath).toString('base64');
+      const logoData = fs.readFileSync(logoPath);
+      logoImage = logoData.toString('base64');
+    } else {
+      console.warn('Logo image not found at:', logoPath);
     }
 
+    // Read and encode the user photo
     if (userPhotoPath && fs.existsSync(userPhotoPath)) {
-      userPhoto = fs.readFileSync(userPhotoPath).toString('base64');
+      const photoData = fs.readFileSync(userPhotoPath);
+      userPhoto = photoData.toString('base64');
+    } else {
+      console.warn('User photo not found at:', userPhotoPath);
     }
 
     // ** HEADER WITH LOGO **
@@ -68,21 +124,21 @@ const AdmitCard = async (req, res) => {
 
     // Essential details only
     const details = [
-      { label: "Name", value: userData.student_name },
-      { label: "Date of Birth", value: `${userData.dob.day}-${userData.dob.month}-${userData.dob.year}` },
-      { label: "Father's Name", value: userData.father_name },
-      { label: "Class", value: userData.class },
-      { label: "Contact No.", value: userData.father_contact },
+      { label: "Name", value: applicationData.student_name },
+      { label: "Date of Birth", value: `${applicationData.dob.day}-${applicationData.dob.month}-${applicationData.dob.year}` },
+      { label: "Father's Name", value: applicationData.father_name },
+      { label: "Class", value: applicationData.class },
+      { label: "Contact No.", value: applicationData.father_contact },
       {
         label: "Address",
-        value: [userData.residence].filter(Boolean).join(', ')
+        value: [applicationData.residence, applicationData.village, applicationData.tehsil, applicationData.district].filter(Boolean).join(', ')
       },
-      { label: "PEN No", value: userData.pen_no },
-      { label: "Blood Group", value: userData.blood_group }
+      { label: "PEN No", value: applicationData.pen_no },
+      { label: "Blood Group", value: applicationData.blood_group }
     ];
 
     // Filter out empty values
-    const filteredDetails = details.filter(d => d.value && d.value.trim() !== '');
+    const filteredDetails = details.filter(d => d.value && d.value.toString().trim() !== '');
     const lineHeight = 18;
     const detailStartY = cursorY;
 
@@ -90,7 +146,7 @@ const AdmitCard = async (req, res) => {
       doc.setFont('Helvetica', 'bold');
       doc.text(`${item.label}:`, marginLeft, cursorY);
       doc.setFont('Helvetica', 'normal');
-      doc.text(item.value, marginLeft + 150, cursorY);
+      doc.text(item.value.toString(), marginLeft + 150, cursorY);
       cursorY += lineHeight;
     });
 
@@ -174,15 +230,15 @@ const AdmitCard = async (req, res) => {
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename=${userData._id}_Admit_Card.pdf`,
+      'Content-Disposition': `attachment; filename=${applicationData.student_name}_Admit_Card.pdf`,
       'Content-Length': Buffer.byteLength(pdfOutput)
     });
 
     res.send(Buffer.from(pdfOutput, 'binary'));
 
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Failed to generate PDF');
+    console.error('Error in AdmitCard Controller:', err);
+    res.status(500).json({ message: 'Failed to generate PDF' });
   }
 };
 
