@@ -2,7 +2,7 @@
 
 const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
-
+const bcrypt = require('bcryptjs'); // For hashing passwords
 // Registration Controller for Admin
 exports.registerAdmin = async (req, res) => {
   try {
@@ -48,14 +48,14 @@ exports.registerAdmin = async (req, res) => {
   }
 };
 
-// Login Controller for Admin
+
 exports.loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // Validate input
     if (!email || !password) {
-      return res.status(400).json({ msg: "Not all fields have been entered." });
+      return res.status(400).json({ success: false, msg: "Email and password are required." });
     }
 
     // Find admin by email
@@ -65,20 +65,23 @@ exports.loginAdmin = async (req, res) => {
     }
 
     // Validate password
-    const isMatch = admin.validPassword(password);
+    const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) {
       return res.status(400).json({ success: false, msg: "Invalid credentials." });
     }
 
     // Generate JWT
-    const token = admin.generateJWT();
+    const token = jwt.sign(
+      { id: admin._id, email: admin.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
     // Update admin's isLoggedIn status
     admin.isLoggedIn = true;
     await admin.save();
 
-    // Respond with token and admin info
-    res.json({
+    res.status(200).json({
       success: true,
       result: {
         token,
@@ -87,16 +90,18 @@ exports.loginAdmin = async (req, res) => {
           name: admin.name,
           surname: admin.surname,
           email: admin.email,
-          isLoggedIn: admin.isLoggedIn
+          isLoggedIn: admin.isLoggedIn,
         },
       },
-      msg: "Successfully logged in"
+      msg: "Successfully logged in",
     });
   } catch (err) {
     console.error("Error logging in admin:", err);
     res.status(500).json({ success: false, msg: "Server Error" });
   }
 };
+
+
 
 // Token Validation Middleware for Admin
 exports.isValidAdminToken = async (req, res, next) => {

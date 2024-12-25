@@ -3,6 +3,9 @@ const jwt = require('jsonwebtoken');
 const Admin = require("../models/Admin");
 
 const AdminAuthMiddleware = async (req, res, next) => {
+    const token = req.header('Authorization');
+    console.log(token);
+    console.log("Askery");
     try {
         const token = req.header('Authorization');
         console.log("Token Askery");

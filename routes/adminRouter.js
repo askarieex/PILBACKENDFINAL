@@ -40,6 +40,16 @@ const {
   deleteContact,
 } = require('../controllers/Contact');
 
+const { 
+  getTotalUsers, 
+  getTotalContacts, 
+  getTotalDatesheets, 
+  getTotalMessages, 
+  getTotalApplications, 
+  getTotalSyllabus 
+} = require('../controllers/Dashboard');
+
+
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -185,4 +195,13 @@ router.get('/contact', AdminAuthMiddleware, catchErrors(getAllContacts));
 router.delete('/contact/:id', AdminAuthMiddleware, catchErrors(deleteContact));
 
 router.get("/admitCard", AdminAuthMiddleware, AdmitCard);
+router.get("/total-users", AdminAuthMiddleware, getTotalUsers);
+router.get("/total-contacts", AdminAuthMiddleware, getTotalContacts);
+router.get("/total-datesheets", AdminAuthMiddleware, getTotalDatesheets);
+router.get("/total-messages", AdminAuthMiddleware, getTotalMessages);
+router.get("/total-applications", AdminAuthMiddleware, getTotalApplications);
+router.get("/total-syllabus", AdminAuthMiddleware, getTotalSyllabus);
+
+
+
 module.exports = router;
