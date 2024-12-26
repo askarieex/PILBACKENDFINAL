@@ -17,17 +17,23 @@ const port = process.env.PORT || 3001;
 connectDB();
 
 // Middleware
-app.use(express.json());
 app.use(morgan('dev'));
 app.use(cors({
-  origin: ['https://pioneerinstitute.in','http://pioneerinstitute.in','https://pil-admin.site','http://pil-admin.site','http://localhost:3002', 'http://localhost:3000','http://localhost:3001'],
+  origin: [
+    'https://pioneerinstitute.in',
+    'http://pioneerinstitute.in',
+    'https://pil-admin.site',
+    'http://pil-admin.site',
+    'http://localhost:3002',
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
   credentials: true,
 }));
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
-
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -45,7 +51,18 @@ app.use(notFound);
 // Centralized error handler
 app.use(errorMiddleware);
 
-// Start the server
-app.listen(port, () => {
+// Global error handlers to prevent crashes
+const server = app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection:', reason);
+  // Close server & exit process
+  server.close(() => process.exit(1));
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
 });
