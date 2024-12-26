@@ -3,7 +3,7 @@
 const express = require("express");
 const { register } = require('../controllers/admissionController');
 const { login } = require("../controllers/loginController");
-const registerValidate = require("../middlewares/registerValMiddleware"); // Corrected spelling
+const registerValidate = require("../middlewares/regsiterValMiddleware"); // Corrected spelling
 const registerSchema = require("../validations/registrationFormValidation");
 const loginValidate = require("../middlewares/loginValMiddleware");
 const loginSchema = require("../validations/loginFormValidation");
