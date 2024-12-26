@@ -1,3 +1,4 @@
+// backend/server.js
 require('dotenv').config();
 const express = require('express');
 const connectDB = require("./config/db");
@@ -17,37 +18,23 @@ connectDB();
 
 // Middleware
 app.use(morgan('dev'));
-
-// CORS Configuration
-const allowedOrigins = [
-  'https://pioneerinstitute.in',
-  'http://pioneerinstitute.in',
-  'https://pil-admin.site',
-  'http://pil-admin.site',
-  'http://localhost:3002',
-  'http://localhost:3000',
-  'http://localhost:3001'
-];
-
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end(); // Handle preflight requests
-  }
-  next();
-});
-
-// Body Parsers
+app.use(cors({
+  origin: [
+    'https://pioneerinstitute.in',
+    'http://pioneerinstitute.in',
+    'https://pil-admin.site',
+    'http://pil-admin.site',
+    'http://localhost:3002',
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  credentials: true,
+}));
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
-// Static Files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
@@ -61,10 +48,10 @@ app.use("/api/admin", adminRouter);
 // 404 Handler
 app.use(notFound);
 
-// Centralized Error Handler
+// Centralized error handler
 app.use(errorMiddleware);
 
-// Global Error Handlers
+// Global error handlers to prevent crashes
 const server = app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
