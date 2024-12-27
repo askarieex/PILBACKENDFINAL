@@ -11,7 +11,6 @@ const path = require("path");
 
 // Optional Security Enhancements
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 
@@ -24,16 +23,10 @@ const port = process.env.PORT || 3001;
 connectDB();
 
 // ------------------------------
-// 2. Security Middlewares (Optional but Recommended)
+// 2. Security Middlewares
 // ------------------------------
-
-// Set security HTTP headers
 app.use(helmet());
-
-// Data Sanitization against NoSQL injection
 app.use(mongoSanitize());
-
-// Data Sanitization against XSS
 app.use(xss());
 
 // ------------------------------
@@ -42,68 +35,44 @@ app.use(xss());
 app.use(morgan('dev'));
 
 // ------------------------------
-// 4. CORS Configuration
-// ------------------------------
-
-// Define allowed base domains (without subdomains)
-const allowedBaseDomains = [
-  'pioneerinstitute.in',
-  'pil-admin.site'
-];
-
-// Function to check if the origin is allowed
-const isOriginAllowed = (origin) => {
-  if (!origin) return true; // Allow requests with no origin (e.g., mobile apps)
-
-  try {
-    const hostname = new URL(origin).hostname;
-
-    // Check if hostname is exactly a base domain or a subdomain of it
-    const allowed = allowedBaseDomains.some(baseDomain => 
-      hostname === baseDomain || hostname.endsWith(`.${baseDomain}`)
-    );
-    if (!allowed) {
-      console.warn(`Origin not allowed: ${origin}`);
-    }
-    return allowed;
-  } catch (err) {
-    console.error('Invalid Origin:', origin);
-    return false;
-  }
-};
-
-// CORS options
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (isOriginAllowed(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Allow cookies and authorization headers
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
-};
-
-// Apply CORS middleware globally
-app.use(cors(corsOptions));
-
-// Explicitly handle preflight requests
-app.options('*', cors(corsOptions));
-
-// ------------------------------
-// 5. Body Parsers
+// 4. Body Parsers
 // ------------------------------
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // ------------------------------
-// 6. Serve Static Files without CORS Headers (Nginx handles it)
+// 5. CORS Configuration
+// ------------------------------
+
+// Define allowed origins
+const allowedOrigins = [
+    'https://pil-admin.site',
+    'https://www.pil-admin.site',
+    'https://pioneerinstitute.in',
+    'https://www.pioneerinstitute.in'
+];
+
+// CORS options
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// ------------------------------
+// 6. Static Files
 // ------------------------------
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/pilbackend/PILBACKENDFINAL/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ------------------------------
 // 7. API Routes
@@ -122,31 +91,21 @@ app.use(notFound);
 app.use(errorMiddleware);
 
 // ------------------------------
-// 10. Catch-All Route for Frontend (SPA)
-// ------------------------------
-app.use(express.static(path.join(__dirname, 'frontend', 'build')));
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'build', 'index.html'));
-});
-
-// ------------------------------
-// 11. Start the Server
+// 10. Start the Server
 // ------------------------------
 const server = app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+    console.log(`Server listening on port ${port}`);
 });
 
 // ------------------------------
-// 12. Global Error Handlers
+// 11. Global Error Handlers
 // ------------------------------
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection:', reason);
-  // Close server & exit process
-  server.close(() => process.exit(1));
+    console.error('Unhandled Rejection:', reason);
+    server.close(() => process.exit(1));
 });
 
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  process.exit(1);
+    console.error('Uncaught Exception:', error);
+    process.exit(1);
 });
