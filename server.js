@@ -19,15 +19,7 @@ connectDB();
 // Middleware
 app.use(morgan('dev'));
 app.use(cors({
-  origin: [
-    'https://pioneerinstitute.in',
-    'http://pioneerinstitute.in',
-    'https://pil-admin.site',
-    'http://pil-admin.site',
-    'http://localhost:3002',
-    'http://localhost:3000',
-    'http://localhost:3001'
-  ],
+ origin: '*', // Allow all origins
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
   credentials: true,
