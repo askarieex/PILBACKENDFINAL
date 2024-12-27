@@ -25,11 +25,17 @@ app.use(morgan('dev'));
 app.use(cors({
   origin: [
     'https://pil-admin.site',
-    'http://pil-admin.site',
     'https://www.pil-admin.site',
     'https://pioneerinstitute.in',
     'https://www.pioneerinstitute.in',
+    'https://api-pil.site',
+    'https://www.api-pil.site',
+    'http://pil-admin.site',
+    'http://www.pil-admin.site',
     'http://pioneerinstitute.in',
+    'http://www.pioneerinstitute.in',
+    'http://api-pil.site',
+    'http://www.api-pil.site',
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002'
