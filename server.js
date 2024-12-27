@@ -69,9 +69,13 @@ const isOriginAllowed = (origin) => {
     const hostname = new URL(origin).hostname;
 
     // Check if hostname is exactly a base domain or a subdomain of it
-    return allowedBaseDomains.some(baseDomain => 
+    const allowed = allowedBaseDomains.some(baseDomain => 
       hostname === baseDomain || hostname.endsWith(`.${baseDomain}`)
     );
+    if (!allowed) {
+      console.warn(`Origin not allowed: ${origin}`);
+    }
+    return allowed;
   } catch (err) {
     console.error('Invalid Origin:', origin);
     return false;
@@ -93,7 +97,7 @@ const corsOptions = {
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
 
-// Apply CORS middleware
+// Apply CORS middleware globally
 app.use(cors(corsOptions));
 
 // Explicitly handle preflight requests
@@ -109,20 +113,11 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // 6. Serve Static Files with CORS Headers
 // ------------------------------
 
-// Middleware to set CORS headers for static files
-app.use('/uploads', (req, res, next) => {
-  const origin = req.headers.origin;
-  if (isOriginAllowed(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-}, express.static(path.join(__dirname, 'uploads')));
+// Apply CORS to /uploads route
+app.use('/uploads', cors(corsOptions), express.static(path.join(__dirname, 'uploads')));
 
-// If serving a frontend (e.g., React) from the same server
-// Adjust the path to your frontend build directory as needed
-app.use(express.static(path.join(__dirname, 'frontend', 'build')));
+// If images are under a different path, add another static middleware
+app.use('/pilbackend/PILBACKENDFINAL/uploads', cors(corsOptions), express.static(path.join(__dirname, 'uploads')));
 
 // ------------------------------
 // 7. API Routes
@@ -143,6 +138,8 @@ app.use(errorMiddleware);
 // ------------------------------
 // 10. Catch-All Route for Frontend (SPA)
 // ------------------------------
+app.use(express.static(path.join(__dirname, 'frontend', 'build')));
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'build', 'index.html'));
 });
