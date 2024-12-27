@@ -1,5 +1,3 @@
-// backend/server.js
-
 require('dotenv').config();
 const express = require('express');
 const connectDB = require("./config/db");
@@ -31,8 +29,6 @@ connectDB();
 
 // Set security HTTP headers
 app.use(helmet());
-
-
 
 // Data Sanitization against NoSQL injection
 app.use(mongoSanitize());
@@ -104,14 +100,10 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // ------------------------------
-// 6. Serve Static Files with CORS Headers
+// 6. Serve Static Files without CORS Headers (Nginx handles it)
 // ------------------------------
-
-// Apply CORS to /uploads route
-app.use('/uploads', cors(corsOptions), express.static(path.join(__dirname, 'uploads')));
-
-// If images are under a different path, add another static middleware
-app.use('/pilbackend/PILBACKENDFINAL/uploads', cors(corsOptions), express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/pilbackend/PILBACKENDFINAL/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ------------------------------
 // 7. API Routes
