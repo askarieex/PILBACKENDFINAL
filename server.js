@@ -67,13 +67,14 @@ const corsOptions = {
 };
 
 // Apply CORS middleware
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 
 // ------------------------------
 // 6. Static Files
 // ------------------------------
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+console.log("Askery new")
 // ------------------------------
 // 7. API Routes
 // ------------------------------
