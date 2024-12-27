@@ -26,7 +26,7 @@ app.use(cors({
   origin: [
     'https://pil-admin.site',
     'http://pil-admin.site',
-    'http://www.pil-admin.site',
+    'https://www.pil-admin.site',
     'https://pioneerinstitute.in',
     'https://www.pioneerinstitute.in',
     'http://pioneerinstitute.in',
