@@ -1,3 +1,4 @@
+// backend/server.js
 require('dotenv').config();
 const express = require('express');
 const connectDB = require("./config/db");
@@ -9,104 +10,61 @@ const errorMiddleware = require('./middlewares/errorMiddleware');
 const { notFound } = require('./handlers/errorHandlers');
 const path = require("path");
 
-// Optional Security Enhancements
-const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
-
 const app = express();
 const port = process.env.PORT || 3001;
 
-// ------------------------------
-// 1. Connect to MongoDB
-// ------------------------------
+// Connect to MongoDB
 connectDB();
 
-// ------------------------------
-// 2. Security Middlewares
-// ------------------------------
-app.use(helmet());
-app.use(mongoSanitize());
-app.use(xss());
-
-// ------------------------------
-// 3. Logging Middleware
-// ------------------------------
+// Middleware
 app.use(morgan('dev'));
-
-// ------------------------------
-// 4. Body Parsers
-// ------------------------------
+app.use(cors({
+  origin: [
+    'https://pioneerinstitute.in',
+    'https://www.pioneerinstitute.in',
+    'http://pioneerinstitute.in',
+    'https://pil-admin.site',
+    'https://www.pil-admin.site',
+    'http://pil-admin.site',
+    'http://localhost:3002',
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  credentials: true,
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// ------------------------------
-// 5. CORS Configuration
-// ------------------------------
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Define allowed origins
-const allowedOrigins = [
-    'https://pil-admin.site',
-    'https://www.pil-admin.site',
-    'https://pioneerinstitute.in',
-    'https://www.pioneerinstitute.in'
-];
+// Routes
+app.get("/", (req, res) => {
+  res.send("Home Page");
+});
 
-// CORS options
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-};
-
-// Apply CORS middleware
-// app.use(cors(corsOptions));
-
-// ------------------------------
-// 6. Static Files
-// ------------------------------
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-console.log("Askery new")
-// ------------------------------
-// 7. API Routes
-// ------------------------------
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 
-// ------------------------------
-// 8. 404 Handler for API Routes
-// ------------------------------
+// 404 Handler
 app.use(notFound);
 
-// ------------------------------
-// 9. Centralized Error Handler
-// ------------------------------
+// Centralized error handler
 app.use(errorMiddleware);
 
-// ------------------------------
-// 10. Start the Server
-// ------------------------------
+// Global error handlers to prevent crashes
 const server = app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+  console.log(`Server listening on port ${port}`);
 });
 
-// ------------------------------
-// 11. Global Error Handlers
-// ------------------------------
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection:', reason);
-    server.close(() => process.exit(1));
+  console.error('Unhandled Rejection:', reason);
+  // Close server & exit process
+  server.close(() => process.exit(1));
 });
 
 process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
-    process.exit(1);
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
 });
