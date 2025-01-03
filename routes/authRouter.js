@@ -3,7 +3,7 @@
 const express = require("express");
 const { register } = require('../controllers/admissionController');
 const { login } = require("../controllers/loginController");
-const registerValidate = require("../middlewares/regsiterValMiddleware"); // Corrected spelling
+const registerValidate = require("../middlewares/regsiterValMiddleware");
 const registerSchema = require("../validations/registrationFormValidation");
 const loginValidate = require("../middlewares/loginValMiddleware");
 const loginSchema = require("../validations/loginFormValidation");
@@ -36,13 +36,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 2MB limit
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    // Only accept JPG/PNG (and PDF if needed)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only JPG, PNG, and PDF are allowed.'));
+      cb(new Error('Invalid file type. Only JPG and PNG are allowed.'));
     }
   }
 });
@@ -52,16 +53,8 @@ const router = express.Router();
 // Routes
 router.post(
   "/register",
-  upload.fields([
-    { name: 'dobCertificate', maxCount: 1 },
-    { name: 'bloodReport', maxCount: 1 },
-    { name: 'aadharCard', maxCount: 1 },
-    { name: 'passportPhotos', maxCount: 1 },
-    { name: 'marksCertificate', maxCount: 1 },
-    { name: 'schoolLeavingCert', maxCount: 1 },
-    { name: 'studentPhoto', maxCount: 1 },
-  ]),
-  registerValidate(registerSchema), // Apply validation middleware after file uploads
+  upload.single('studentPhoto'),       // <--- Only studentPhoto
+  registerValidate(registerSchema),
   register
 );
 

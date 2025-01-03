@@ -33,24 +33,22 @@ const register = asyncHandler(async (req, res) => {
     pen_no,
     blood_group,
     sibling_studying,
-    sibling_details,
+    sibling_details
   } = req.body;
 
-  const { dobCertificate, bloodReport, aadharCard, passportPhotos, marksCertificate, schoolLeavingCert, studentPhoto } = req.files || {};
+  // Using multer's single upload -> req.file
+  const studentPhoto = req.file;
 
-  const dobCertificatePath = dobCertificate ? dobCertificate[0].path : null;
-  const bloodReportPath = bloodReport ? bloodReport[0].path : null;
-  const aadharCardPath = aadharCard ? aadharCard[0].path : null;
-  const passportPhotosPath = passportPhotos ? passportPhotos[0].path : null;
-  const marksCertificatePath = marksCertificate ? marksCertificate[0].path : null;
-  const schoolLeavingCertPath = schoolLeavingCert ? schoolLeavingCert[0].path : null;
-  const studentPhotoPath = studentPhoto ? studentPhoto[0].path : null;
+  // If there's a file, get its path
+  const studentPhotoPath = studentPhoto ? studentPhoto.path : null;
 
   // Check if the user with the same email already exists
   const userExists = await Registration.findOne({ email });
-
   if (userExists) {
-    return res.status(400).json({ success: false, msg: 'Email already exists' });
+    return res.status(400).json({
+      success: false,
+      msg: 'Email already exists'
+    });
   }
 
   // Create user
@@ -60,7 +58,7 @@ const register = asyncHandler(async (req, res) => {
     class: studentClass,
     dated,
     student_name,
-    dob, // Already an object with day, month, year, in_words
+    dob,
     school_last_attended,
     father_name,
     father_profession,
@@ -79,12 +77,7 @@ const register = asyncHandler(async (req, res) => {
     blood_group,
     sibling_studying,
     sibling_details: sibling_studying ? sibling_details : {},
-    dob_certificate_path: dobCertificatePath,
-    blood_report_path: bloodReportPath,
-    aadhar_card_path: aadharCardPath,
-    passport_photos_path: passportPhotosPath,
-    marks_certificate_path: marksCertificatePath,
-    school_leaving_cert_path: schoolLeavingCertPath,
+    // Only the student photo path is stored now
     student_photo_path: studentPhotoPath
   });
 
