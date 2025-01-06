@@ -1,3 +1,5 @@
+// backend/routes/adminRoutes.js
+
 const express = require("express");
 const { catchErrors } = require("../handlers/errorHandlers"); // Middleware to catch async errors
 const {
@@ -34,21 +36,21 @@ const {
   updateMessage,
   deleteMessage,
 } = require("../controllers/messageController");
+
 const { AdmitCard } = require("../controllers/admitCard");
 const {
   getAllContacts,
   deleteContact,
 } = require('../controllers/Contact');
 
-const { 
-  getTotalUsers, 
-  getTotalContacts, 
-  getTotalDatesheets, 
-  getTotalMessages, 
-  getTotalApplications, 
-  getTotalSyllabus 
+const {
+  getTotalUsers,
+  getTotalContacts,
+  getTotalDatesheets,
+  getTotalMessages,
+  getTotalApplications,
+  getTotalSyllabus
 } = require('../controllers/Dashboard');
-
 
 const multer = require("multer");
 const path = require("path");
@@ -87,10 +89,9 @@ const uploadPDF = multer({
   storage: storage,
   fileFilter: pdfFileFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 20 MB limit
+    fileSize: 50 * 1024 * 1024, // 50 MB limit
   },
 });
-
 
 // Middleware to handle file size errors and validation errors
 const handleMulterErrors = (err, req, res, next) => {
@@ -99,7 +100,7 @@ const handleMulterErrors = (err, req, res, next) => {
     if (err.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
         success: false,
-        message: "File size exceeds the limit of 25 MB.",
+        message: "File size exceeds the limit of 50 MB.",
       });
     }
   } else if (req.fileValidationError) {
@@ -186,14 +187,11 @@ router.post("/messages", AdminAuthMiddleware, catchErrors(createMessage));
 router.put("/messages/:id", AdminAuthMiddleware, catchErrors(updateMessage));
 router.delete("/messages/:id", AdminAuthMiddleware, catchErrors(deleteMessage));
 
-
-
-// Route to get all contacts
+// Contact Routes
 router.get('/contact', AdminAuthMiddleware, catchErrors(getAllContacts));
-
-// Route to delete a contact by ID
 router.delete('/contact/:id', AdminAuthMiddleware, catchErrors(deleteContact));
 
+// Admit Card and Dashboard Routes
 router.get("/admitCard", AdminAuthMiddleware, AdmitCard);
 router.get("/total-users", AdminAuthMiddleware, getTotalUsers);
 router.get("/total-contacts", AdminAuthMiddleware, getTotalContacts);
@@ -202,6 +200,15 @@ router.get("/total-messages", AdminAuthMiddleware, getTotalMessages);
 router.get("/total-applications", AdminAuthMiddleware, getTotalApplications);
 router.get("/total-syllabus", AdminAuthMiddleware, getTotalSyllabus);
 
+// **Remove the Assignments Routes from Here**
+// router.get("/", getAllAssignments);
+// router.get("/:className", getAssignmentsByClass);
+// router.post("/:className", createAssignment);
+// router.put("/:className/:assignmentId", updateAssignment);
+// router.delete("/:className/:assignmentId", deleteAssignment);
 
+// **Mount Assignments Routes Separately**
+const assignmentRoutes = require("./assignmentRoutes"); // Adjust the path as needed
+router.use("/assignments", assignmentRoutes);
 
 module.exports = router;

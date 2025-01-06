@@ -21,6 +21,7 @@ const {
   deleteDatesheet
 } = require("../controllers/datesheetController");
 const { getAllMessages } = require("../controllers/messageController");
+const { getAllAssignments } = require("../controllers/assignmentController");
 
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
@@ -64,6 +65,7 @@ router.get("/admitCard", authMiddleware, AdmitCard);
 router.get("/syllabus", getAllSyllabus);
 router.get("/datesheet", getAllDatesheets);
 router.get("/messages", getAllMessages);
+router.get("/assignments", getAllAssignments);
 router.post('/contact', createContact);
 
 module.exports = router;
